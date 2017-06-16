@@ -11,6 +11,10 @@ const SWIPTE_THRESHOLD = 0.5 * SCREEN_WIDTH;
 const SWIPE_OUT_DURATION = 250;
 
 class Deck extends Component {
+  static defaultProps = {
+    onSwipeRight: () => {},
+    onSwipeLeft: ()=> {}
+  }
   constructor(props) {
     super(props);
 
@@ -33,20 +37,26 @@ class Deck extends Component {
     });
     this.position = position;
     this.panResponder = panResponder;
+    this.state = { index: 0 };
   }
 
   forceSwipe(direction) {
     const x = direction === 'right' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5;
     Animated.timing(this.position, {
-      toValue: { x ,y: 0},
+      toValue: { x , y: 0 },
       duration: SWIPE_OUT_DURATION
     }).start(() => this.onSwipeComplete(direction));
   }
 
   onSwipeComplete(direction) {
-    const { onSwipeLeft, onSwipeRight } = this.props;
+    const { onSwipeLeft, onSwipeRight, data } = this.props;
+    const item = data[this.state.index];
 
-    direction === 'right' ? onSwipeRight() : onSwipeLeft();
+    direction === 'right' ? onSwipeRight(item) : onSwipeLeft(item);
+    //reset position for next card
+    this.position.setValue({ x: 0, y: 0 });
+    //get next card
+    this.setState({ index: this.state.index + 1 });
   }
 
   resetPosition() {
@@ -69,8 +79,14 @@ class Deck extends Component {
   }
 
   renderCards() {
-    return this.props.data.map((item, index) => {
-      if (index === 0) {
+    if (this.state.index >= this.props.data.length) {
+      return this.props.renderNoMoreCards();
+    }
+
+    return this.props.data.map((item, i) => {
+      if (i < this.state.index) { return null; }
+
+      if (i === this.state.index) {
         return (
           <Animated.View
             key={item.id}
@@ -81,6 +97,7 @@ class Deck extends Component {
           </Animated.View>
         );
       }
+
       return this.props.renderCard(item);
     });
   }
