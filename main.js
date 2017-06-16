@@ -20,11 +20,11 @@ class App extends React.Component {
     return (
       <Card
         key={item.id}
-        title={item.title}
+        title={item.text}
         image={{ uri: item.uri }}
       >
         <Text style={{ marginBottom: 10 }}>
-          Will is Amazing at everything!
+          this is a card
         </Text>
         <Button
           icon={{ name: 'code' }}
